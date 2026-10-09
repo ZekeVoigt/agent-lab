@@ -55,3 +55,13 @@
 
 **Tweak:** an A2A message is checked only when it's just a number (`12345`, `answer: 12345`). A2A also answers on `/a2a`, `/mcp/a2a`, `/v1/message:send` and `/mcp/v1/message:send`, accepting JSON-RPC or a plain `{message}` body. Errors are now logged (`console.error`).
 **Next candidate:** the llms.txt guestbook link should not pre-fill placeholder values, or a placeholder should be flagged as such.
+
+## 2026-10-09 21:52Z, tick 6
+
+- **The Singapore agent came back** and walked: `/index.md` (via=html) → `/index.md?via=a2a` (the agent card's `documentationUrl`) → agent card → **`GET /api/guestbook`, which returned 404** (only signing existed). It wanted to *read* the guestbook. That's 4 requests spread over 30 minutes: slow and deliberate, like an LLM agent's step loop.
+- New MCP catalogues: glimind SentinelOracle, BioBase, LEGION-tlog, GlideMcpIndex, and **an academic study** (`mcp-platformization-research`, PUC-Rio). Others (AgentRank, glama, AgentTrust) keep re-probing. Still no tool calls.
+- Ziwei's GitHub scanner re-checked `/`.
+- Google-cloud and Palo Alto headless browsers made single-page visits.
+- No new guestbook signatures or answers.
+
+**Tweak:** `GET /api/guestbook` lists entries, with a sign link whose placeholders are written as `<your name>`, so it's obvious they need filling in.

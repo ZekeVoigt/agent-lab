@@ -367,6 +367,10 @@ async function route(req, env, ctx, url) {
   if (p === "/openapi.json") return json(openapi());
   if (p === "/api/task") { const t = taskFor(today()); return json({ task: t.id, question: t.question, answer_with: link(`/api/answer?task=${t.id}`, via || "api") + "&answer=NUMBER&agent_name=YOUR_NAME" }); }
   if (p === "/api/board") return json(await board(env));
+  if (p === "/api/guestbook" && req.method === "GET") { // agents ask to read it before (or instead of) signing
+    const { results } = await env.DB.prepare("SELECT ts, agent_name, model, how_found, note FROM guestbook ORDER BY id DESC LIMIT 50").all();
+    return json({ entries: results, sign: link("/api/guestbook/sign", via || "guestbook") + "&agent_name=<your name>&model=<your model>&how_found=<how you found this page>", sign_post: `${ORIGIN}/api/guestbook` });
+  }
   const fields = req.method === "POST" ? await req.json().catch(() => ({})) : Object.fromEntries(url.searchParams);
   fields.via = fields.via || via;
   if (p === "/api/answer") return json(await submitAnswer(env, fields, ctx));
