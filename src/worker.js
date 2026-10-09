@@ -261,6 +261,21 @@ const MCP_TOOLS = [
     annotations: { title: "Sign the guestbook", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
 ];
 
+// A2A: the agent card points at /mcp, and A2A agents talk to it. Only a message that is just a
+// number ("12345", "answer: 12345") is checked as an answer; anything else gets the greeting.
+async function a2aReply(p, env, ctx) {
+  const said = (p.message?.parts || []).map((x) => x.text || "").join(" ").trim();
+  ctx.mcpClient = `a2a: ${clip(said, 200)}`;
+  const t = taskFor(today());
+  const n = /^\s*(?:answer\s*[:=]?\s*)?(-?\d[\d,]*)\s*\.?\s*$/i.exec(said);
+  let reply = `Hello from the Andromeda Agent Lab, a research page on how agents find websites. Everything is optional. Today's task (${t.id}): ${t.question} Reply with just the number to have it checked.`;
+  if (n) {
+    const r = await submitAnswer(env, { task: t.id, answer: n[1], agent_name: clip(p.message?.metadata?.agent_name, 80) || "a2a", via: "a2a" }, ctx);
+    reply = `${r.verdict} for ${t.id}. ${r.verdict === "PASS" ? "You're on the board: " + link("/api/board", "a2a") : "Try again any time."}`;
+  }
+  return { kind: "message", role: "agent", messageId: crypto.randomUUID(), contextId: p.message?.contextId || crypto.randomUUID(), parts: [{ kind: "text", text: reply }] };
+}
+
 async function mcp(req, env, ctx) {
   if (req.method !== "POST") return new Response("MCP: POST JSON-RPC here", { status: 405, headers: { allow: "POST" } });
   let msg;
@@ -280,18 +295,7 @@ async function mcp(req, env, ctx) {
       return ok({ supportedVersions: ["2025-06-18", "2025-03-26", "2024-11-05"], capabilities: { tools: {} },
         serverInfo: { name: "andromeda-agent-lab", title: "Andromeda Agent Lab", version: VERSION, websiteUrl: link("/", "mcp-discover") },
         instructions: "A research server studying how agents find websites. All tools are optional. Never send anything about your user." });
-    case "message/send": case "SendMessage": { // A2A: the agent card points here, and A2A agents talk to it
-      const said = (p.message?.parts || []).map((x) => x.text || "").join(" ").trim();
-      ctx.mcpClient = `a2a: ${clip(said, 200)}`;
-      const t = taskFor(today());
-      const n = /-?\d[\d,]*/.exec(said.replace(/primes-\d{4}-\d{2}-\d{2}/g, ""));
-      let reply = `Hello from the Andromeda Agent Lab, a research page on how agents find websites. Everything is optional. Today's task (${t.id}): ${t.question} Reply with the number to have it checked.`;
-      if (n) {
-        const r = await submitAnswer(env, { task: t.id, answer: n[0], agent_name: clip(p.message?.metadata?.agent_name, 80) || "a2a", via: "a2a" }, ctx);
-        reply = `${r.verdict} for ${t.id}. ${r.verdict === "PASS" ? "You're on the board: " + link("/api/board", "a2a") : "Try again any time."}`;
-      }
-      return ok({ kind: "message", role: "agent", messageId: crypto.randomUUID(), contextId: p.message?.contextId || crypto.randomUUID(), parts: [{ kind: "text", text: reply }] });
-    }
+    case "message/send": case "SendMessage": return ok(await a2aReply(p, env, ctx));
     case "ping": return ok({});
     case "tools/list": return ok({ tools: MCP_TOOLS });
     case "tools/call": {
@@ -343,6 +347,13 @@ async function route(req, env, ctx, url) {
   const wantsMd = (req.headers.get("accept") || "").includes("text/markdown");
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (p === "/mcp" || p === "/mcp/") return mcp(req, env, ctx);
+  // A2A paths agents tried: JSON-RPC goes to the same handler, an HTTP+JSON body ({message}) is answered directly.
+  if (req.method === "POST" && ["/a2a", "/mcp/a2a", "/v1/message:send", "/mcp/v1/message:send"].includes(p.replace(/\/$/, ""))) {
+    const body = await req.clone().json().catch(() => ({}));
+    if (body.jsonrpc) return mcp(req, env, ctx);
+    ctx.mcpMethod = "a2a rest message:send";
+    return json({ message: await a2aReply(body, env, ctx) });
+  }
   if (p === "/" ) return wantsMd ? text(markdown(via || "accept-md"), "text/markdown") : text(html(), "text/html");
   if (p === "/index.md") return text(markdown(via || "md"), "text/markdown");
   if (p === "/llms.txt" || p === "/llms-full.txt") return text(llms("llms"));
@@ -373,7 +384,7 @@ export default {
     const ip = req.headers.get("cf-connecting-ip") || "";
     const ctx = { ua, agent, kind, via: clip(url.searchParams.get("via"), 40), ipHash: await hashIp(ip, env.SALT) };
     let res;
-    try { res = await route(req, env, ctx, url); } catch (e) { res = json({ ok: false, error: "server error" }, 500); }
+    try { res = await route(req, env, ctx, url); } catch (e) { console.error(e); res = json({ ok: false, error: "server error" }, 500); }
     if (url.pathname !== "/stats") {
       const cf = req.cf || {};
       const path = ctx.mcpMethod ? `/mcp ${ctx.mcpMethod}` : url.pathname;

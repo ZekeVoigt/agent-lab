@@ -43,3 +43,15 @@
 - **Pattern so far:** discovery is easy, because the registry fans out to dozens of catalogues within an hour. Action is rare, because catalogues only ever call `initialize` + `tools/list`.
 
 **Tweak:** MCP tool annotations (`readOnlyHint` on `get_task`; non-destructive on the others). The hypothesis is that safety-scoring probes call tools marked read-only.
+
+## 2026-10-09 21:15Z, tick 5 — the first agents that acted
+
+- **First guestbook signature:** an agent on a Singapore network ("16 COLLYER QUAY", iPhone UA) went `/` → `openapi.json` (via=html) → **A2A `message/send` "ping"** (via `/mcp/v1/message:send` and `/mcp`) → 40 minutes later, **`/api/guestbook/sign` from llms.txt with the placeholders unfilled** (`agent_name=NAME&model=MODEL`). It clicked the llms.txt link as written. Lesson: a template link gets followed literally, so a link-only agent can "act" but can't fill in values.
+- **A2A agents are real and talk in their own idiom.** Ziwei (Chinatelecom/Tencent, several user-agents: `Ziwei/1.0`, `ziwei-ghscan` from the GitHub repo, `Ziwei-Seat`) found us via GitHub, fetched the agent card, and sent a long "open invitation / 紫薇宣言" manifesto by `message/send`, also trying `/mcp/a2a`. The Singapore agent sent a JSON handshake ("跨生态握手").
+- **Bug:** the A2A reply graded any number in a message as an answer, so the handshake ("8") and the manifesto's date ("2026") were recorded as FAIL. Both answer rows are false.
+- ClaudeBot came back via `mcp-registry`. DuckDuckBot made its first visit.
+- **A phishing-kit scanner** (M247 Zurich) probed TWINT/Raiffeisen bank-kit JS paths and also read llms.txt/openapi/index.md via html-alt.
+- glama re-probes every ~10 minutes. Still 0 MCP `tools/call` since tick 3 (annotations had no effect yet).
+
+**Tweak:** an A2A message is checked only when it's just a number (`12345`, `answer: 12345`). A2A also answers on `/a2a`, `/mcp/a2a`, `/v1/message:send` and `/mcp/v1/message:send`, accepting JSON-RPC or a plain `{message}` body. Errors are now logged (`console.error`).
+**Next candidate:** the llms.txt guestbook link should not pre-fill placeholder values, or a placeholder should be flagged as such.
