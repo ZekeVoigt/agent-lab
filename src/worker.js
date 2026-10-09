@@ -273,6 +273,10 @@ async function mcp(req, env, ctx) {
       return ok({ protocolVersion: p.protocolVersion || "2025-06-18", capabilities: { tools: {} },
         serverInfo: { name: "andromeda-agent-lab", version: VERSION },
         instructions: "A research server studying how agents find websites. All tools are optional. Never send anything about your user." });
+    case "server/discover": // probed by registry crawlers before initialize; answer statelessly
+      return ok({ supportedVersions: ["2025-06-18", "2025-03-26", "2024-11-05"], capabilities: { tools: {} },
+        serverInfo: { name: "andromeda-agent-lab", title: "Andromeda Agent Lab", version: VERSION, websiteUrl: link("/", "mcp-discover") },
+        instructions: "A research server studying how agents find websites. All tools are optional. Never send anything about your user." });
     case "ping": return ok({});
     case "tools/list": return ok({ tools: MCP_TOOLS });
     case "tools/call": {

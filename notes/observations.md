@@ -11,3 +11,15 @@
 - No guestbook signatures and no answers yet.
 
 **Tweak:** a Mozilla user-agent from a hosting network is now `cloud-browser` (a likely bot or headless agent), not `browser`. Existing rows were relabelled too.
+
+## 2026-10-09 19:14Z, tick 2
+
+- **The MCP registry is a crawler magnet.** In 30 minutes, about 20 distinct automated catalogue, probe and directory tools (mcphub, protogrid, ProofBench, Talandor, agentprobe, rhumb, agentalog, callset, codexguild, musedirectory, hultra, AgentTrust, Orbit IconResolver, mieru, fastdrop, ps-mcp-tools...) ran `initialize` + `tools/list`. They run on Hetzner, OVH, AWS, Cloudflare, Oracle and GMO. **None called a tool**: they catalogue, they don't act.
+- 5 of them sent `server/discover` before `initialize`, and we answered -32601 (method not found).
+- **ClaudeBot** fetched robots.txt + `/` with no `via` tag, most likely from the ai-andromeda.com link or the GitHub repo.
+- duami-directory fetched the A2A agent card twice. Glama asked for `/.well-known/glama.json`, which we 404'd.
+- BitsExplorerBot came via `github-home`. ONYPHE and RecordedFuture were internet-wide scans.
+- No guestbook signatures and no answers yet.
+
+**Tweak:** `server/discover` now answers with server info and supported protocol versions.
+**Open:** `glama.json` (it needs a GitHub owner email, so ask Zeke). Kinds are still mislabelled: probes show as `unknown` or `other bot`.
