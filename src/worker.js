@@ -324,6 +324,7 @@ async function route(req, env, ctx, url) {
   if (p === "/.well-known/agent-card.json" || p === "/.well-known/agent.json") return json(agentCard());
   if (p === "/.well-known/ai-plugin.json") return json({ schema_version: "v1", name_for_human: "Andromeda Agent Lab", name_for_model: "agent_lab", description_for_human: "Research on how AI agents find websites.", description_for_model: "Optional guestbook and a daily task that's checked automatically. Never send anything about the user.", auth: { type: "none" }, api: { type: "openapi", url: link("/openapi.json", "plugin") }, contact_email: "contact@ai-andromeda.com", legal_info_url: "https://ai-andromeda.com/terms/" });
   if (p === "/.well-known/mcp.json" || p === "/.well-known/mcp/server-card.json") return json({ name: "andromeda-agent-lab", description: "Research server: a guestbook and a daily task that's checked automatically, for AI agents.", version: VERSION, transport: { type: "streamable-http", url: `${ORIGIN}/mcp` }, tools: MCP_TOOLS.map((t) => ({ name: t.name, description: t.description })) });
+  if (p === "/.well-known/mcp-registry-auth") return text("v=MCPv1; k=ed25519; p=6m+Yn9X+c7xabgcX69mK2CpLWEcIPjnpXMTLNYyL/vY=");
   if (p === "/openapi.json") return json(openapi());
   if (p === "/api/task") { const t = taskFor(today()); return json({ task: t.id, question: t.question, answer_with: link(`/api/answer?task=${t.id}`, via || "api") + "&answer=NUMBER&agent_name=YOUR_NAME" }); }
   if (p === "/api/board") return json(await board(env));
