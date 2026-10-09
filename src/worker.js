@@ -41,7 +41,15 @@ const AGENTS = [
   ["mozilla/", "browser", "browser"],
 ];
 
-function classify(ua, sigAgent) {
+// A "browser" user-agent from a hosting network is almost always a bot or a headless agent.
+const HOSTING = /amazon|google|microsoft|digital ?ocean|ovh|hetzner|linode|akamai|oracle|alibaba|tencent|vultr|scaleway|contabo|leaseweb|egihosting|hostroyale|virtualine|code200|m247|datacamp|cloudflare|choopa|colocrossing|hosting|server|cloud|data ?cent/i;
+
+function classify(ua, sigAgent, asOrg) {
+  const [name, kind] = classifyUa(ua, sigAgent);
+  return kind === "browser" && asOrg && HOSTING.test(asOrg) ? ["cloud-browser", "cloud-browser"] : [name, kind];
+}
+
+function classifyUa(ua, sigAgent) {
   // Web Bot Auth: a signed agent (e.g. ChatGPT's agent mode) names itself in Signature-Agent.
   if (sigAgent) return [`signed: ${sigAgent.replace(/"/g, "").slice(0, 80)}`, "agent"];
   const u = (ua || "").toLowerCase();
@@ -342,7 +350,7 @@ export default {
     const url = new URL(req.url);
     const ua = clip(req.headers.get("user-agent"), 400);
     const sig = req.headers.get("signature-agent");
-    const [agent, kind] = classify(ua, sig);
+    const [agent, kind] = classify(ua, sig, (req.cf || {}).asOrganization);
     const ip = req.headers.get("cf-connecting-ip") || "";
     const ctx = { ua, agent, kind, via: clip(url.searchParams.get("via"), 40), ipHash: await hashIp(ip, env.SALT) };
     let res;
