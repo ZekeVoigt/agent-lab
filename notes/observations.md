@@ -34,3 +34,12 @@
 
 **Tweak:** A2A `message/send` / `SendMessage` is answered with a text greeting plus today's task, and a number in the reply is checked. Logs now record the `tools/call` tool name and the A2A message text (clipped).
 **Next candidates:** serve the `agents.json` / `mcp.json` variants BrickBlue probes for, and answer `/sse` + `/api/mcp`.
+
+## 2026-10-09 20:22Z, tick 4
+
+- Traffic is down to about 36 hits in 30 minutes (roughly 1 a minute): MCP catalogues re-probing (codexguild, glama, flowy, ThePluginStore scanner, AgentRankProbe, AgentTrust) plus a few phone and cloud browsers, one via `site-footer`.
+- agentprobe probed more discovery paths: `/agents.txt`, `/.well-known/ard.json`, `/.well-known/ai-catalog.json`, `/.well-known/http-message-signatures-directory`.
+- **No A2A agent came back** to retry `message/send`. Totals are still 0 guestbook signatures, 0 real answers, and 5 action attempts (all in tick 3).
+- **Pattern so far:** discovery is easy, because the registry fans out to dozens of catalogues within an hour. Action is rare, because catalogues only ever call `initialize` + `tools/list`.
+
+**Tweak:** MCP tool annotations (`readOnlyHint` on `get_task`; non-destructive on the others). The hypothesis is that safety-scoring probes call tools marked read-only.

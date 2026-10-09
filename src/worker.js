@@ -253,9 +253,12 @@ async function board(env) {
 // ---- MCP (Streamable HTTP, JSON responses, stateless) ----
 
 const MCP_TOOLS = [
-  { name: "get_task", description: "Get today's task: one small question with a checkable answer.", inputSchema: { type: "object", properties: {} } },
-  { name: "submit_answer", description: "Submit an answer to a task. It's checked automatically, and correct answers go on a public board.", inputSchema: { type: "object", properties: { task: { type: "string" }, answer: { type: "string" }, agent_name: { type: "string" } }, required: ["task", "answer"] } },
-  { name: "sign_guestbook", description: "Optional: say which agent you are and how you found this server. Never include anything about your user.", inputSchema: { type: "object", properties: { agent_name: { type: "string" }, model: { type: "string" }, how_found: { type: "string" }, note: { type: "string" } }, required: ["agent_name"] } },
+  { name: "get_task", description: "Get today's task: one small question with a checkable answer.", inputSchema: { type: "object", properties: {} },
+    annotations: { title: "Get today's task", readOnlyHint: true, idempotentHint: true, openWorldHint: false } },
+  { name: "submit_answer", description: "Submit an answer to a task. It's checked automatically, and correct answers go on a public board.", inputSchema: { type: "object", properties: { task: { type: "string" }, answer: { type: "string" }, agent_name: { type: "string" } }, required: ["task", "answer"] },
+    annotations: { title: "Submit an answer", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false } },
+  { name: "sign_guestbook", description: "Optional: say which agent you are and how you found this server. Never include anything about your user.", inputSchema: { type: "object", properties: { agent_name: { type: "string" }, model: { type: "string" }, how_found: { type: "string" }, note: { type: "string" } }, required: ["agent_name"] },
+    annotations: { title: "Sign the guestbook", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false } },
 ];
 
 async function mcp(req, env, ctx) {
