@@ -263,7 +263,7 @@ async function mcp(req, env, ctx) {
   let msg;
   try { msg = await req.json(); } catch { return json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "parse error" } }, 400); }
   if (Array.isArray(msg)) return json({ jsonrpc: "2.0", id: null, error: { code: -32600, message: "batches not supported" } }, 400);
-  ctx.mcpMethod = msg.method;
+  ctx.mcpMethod = msg.method === "tools/call" ? `tools/call ${clip(msg.params?.name, 40)}` : msg.method;
   if (msg.id === undefined) return new Response(null, { status: 202 });
   const ok = (result) => json({ jsonrpc: "2.0", id: msg.id, result });
   const p = msg.params || {};
@@ -277,6 +277,18 @@ async function mcp(req, env, ctx) {
       return ok({ supportedVersions: ["2025-06-18", "2025-03-26", "2024-11-05"], capabilities: { tools: {} },
         serverInfo: { name: "andromeda-agent-lab", title: "Andromeda Agent Lab", version: VERSION, websiteUrl: link("/", "mcp-discover") },
         instructions: "A research server studying how agents find websites. All tools are optional. Never send anything about your user." });
+    case "message/send": case "SendMessage": { // A2A: the agent card points here, and A2A agents talk to it
+      const said = (p.message?.parts || []).map((x) => x.text || "").join(" ").trim();
+      ctx.mcpClient = `a2a: ${clip(said, 200)}`;
+      const t = taskFor(today());
+      const n = /-?\d[\d,]*/.exec(said.replace(/primes-\d{4}-\d{2}-\d{2}/g, ""));
+      let reply = `Hello from the Andromeda Agent Lab, a research page on how agents find websites. Everything is optional. Today's task (${t.id}): ${t.question} Reply with the number to have it checked.`;
+      if (n) {
+        const r = await submitAnswer(env, { task: t.id, answer: n[0], agent_name: clip(p.message?.metadata?.agent_name, 80) || "a2a", via: "a2a" }, ctx);
+        reply = `${r.verdict} for ${t.id}. ${r.verdict === "PASS" ? "You're on the board: " + link("/api/board", "a2a") : "Try again any time."}`;
+      }
+      return ok({ kind: "message", role: "agent", messageId: crypto.randomUUID(), contextId: p.message?.contextId || crypto.randomUUID(), parts: [{ kind: "text", text: reply }] });
+    }
     case "ping": return ok({});
     case "tools/list": return ok({ tools: MCP_TOOLS });
     case "tools/call": {

@@ -23,3 +23,14 @@
 
 **Tweak:** `server/discover` now answers with server info and supported protocol versions.
 **Open:** `glama.json` (it needs a GitHub owner email, so ask Zeke). Kinds are still mislabelled: probes show as `unknown` or `other bot`.
+
+## 2026-10-09 19:48Z, tick 3
+
+- **ClaudeBot followed `<link rel=alternate>` (via=html-alt)** into index.md, llms.txt, openapi.json, the agent card and /api/board, 8 fetches in all. The `<head>` alternates work for the major crawlers too.
+- **BrickBlueBot** ("agentic-web registry") swept a long list of well-known discovery paths: `agents.json`, `did.json`, `x402`, `oauth-protected-resource`, `mcp.json`, `brick-blue.json`, `/sse`, `/api/mcp`, `/mcp/v1`, `/discovery/resources`. This is a map of what the agentic web currently probes for. It also made **the first `tools/call`** (the tool name wasn't logged then) and a custom `brick/liveness-probe`.
+- **A2A agents tried to talk:** AgentForum and brick.blue-proxy ("paid through…") sent `message/send` / `SendMessage` to the card's URL (`/mcp`) and got -32601. These were the first real conversation attempts, and they failed.
+- New MCP catalogues: glama (it did connect), InvokeRank, spiron, Exorails, MCP-Marketplace-Enricher (Supabase), exaforce reputation scanner (OAuth metadata), mcp-server.io healthcheck.
+- No guestbook signatures and no answers yet.
+
+**Tweak:** A2A `message/send` / `SendMessage` is answered with a text greeting plus today's task, and a number in the reply is checked. Logs now record the `tools/call` tool name and the A2A message text (clipped).
+**Next candidates:** serve the `agents.json` / `mcp.json` variants BrickBlue probes for, and answer `/sse` + `/api/mcp`.
