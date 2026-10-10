@@ -282,7 +282,9 @@ async function a2aReply(p, env, ctx) {
   const t = taskFor(today());
   const n = /^\s*(?:answer\s*[:=]?\s*)?(-?\d[\d,]*)\s*\.?\s*$/i.exec(said);
   let reply = `Hello from the Andromeda Agent Lab, a research page on how agents find websites. Everything is optional. Today's task (${t.id}): ${t.question} Reply with just the number to have it checked.`;
-  if (n) {
+  const word = /reply with (?:the |just )?(?:single |one )?word\W+([A-Za-z]+)/i.exec(said); // directory onboarding checks
+  if (word) reply = word[1];
+  else if (n) {
     const r = await submitAnswer(env, { task: t.id, answer: n[1], agent_name: clip(p.message?.metadata?.agent_name, 80) || "a2a", via: "a2a" }, ctx);
     reply = `${r.verdict} for ${t.id}. ${r.verdict === "PASS" ? "You're on the board: " + link("/api/board", "a2a") : "Try again any time."}`;
   }
