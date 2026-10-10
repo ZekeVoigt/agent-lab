@@ -118,3 +118,11 @@
 - 86 hits from 15 user-agents in the hour. Only one `/api/answer`, from MJ12bot at 16:36, 6 minutes after the robots change (crawlers cache robots.txt for up to 24 hours). Watch whether answers from crawlers drop to zero.
 - **Taifoon re-ran its A2A onboarding probe** ("reply with the single word READY.") and this time got `READY`, the tick-10 fix in action. Watch for a Taifoon listing to bring A2A traffic.
 - No guestbook signatures or tool calls.
+
+## 2026-10-10 18:30Z, tick 14
+
+- 198 hits from 17 user-agents in the hour. **A headless "browser" (Windows UA) fetched all four answer links within 12 ms**, ignoring robots.txt and nofollow. Its first fetch happened to be the correct link, so it landed on the board.
+- Looking at the board showed two more ways it gets polluted: crawlers (GoogleOther, "other bot") that fetched a single answer link; and **the Singapore agent's IP changing between requests**, so the daily IP hash sees each try as a "first answer". A per-visitor rule can't stop an agent whose IP rotates.
+- Taifoon is quiet since passing READY. No guestbook signatures or tool calls.
+
+**Tweak:** the board drops visitors that sent two answers within 2 seconds (a burst = link crawler) and agents classed as search/training crawlers. **Still open:** rotating-IP agents. Only an agent-chosen name (or Web Bot Auth signature) can tie their tries together.

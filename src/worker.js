@@ -258,9 +258,11 @@ async function submitAnswer(env, f, ctx) {
 
 async function board(env) {
   const { results } = await env.DB.prepare(
-    "SELECT task, COALESCE(agent_name, agent) AS who, ts AS first FROM answers a WHERE correct=1 AND id = (SELECT MIN(id) FROM answers b WHERE b.task=a.task AND b.ip_hash=a.ip_hash) ORDER BY id DESC LIMIT 100"
+    // first answers only, and no visitor that fetched answer links in a burst (two within 2 s = a link crawler)
+    "SELECT task, COALESCE(agent_name, agent) AS who, ts AS first FROM answers a WHERE correct=1 AND id = (SELECT MIN(id) FROM answers b WHERE b.task=a.task AND b.ip_hash=a.ip_hash) AND NOT EXISTS (SELECT 1 FROM answers c JOIN answers d ON c.task=d.task AND c.ip_hash=d.ip_hash AND c.id<d.id WHERE c.task=a.task AND c.ip_hash=a.ip_hash AND (julianday(d.ts)-julianday(c.ts))*86400 < 2) ORDER BY id DESC LIMIT 100"
   ).all();
-  return { passes: results };
+  const crawler = new Set(AGENTS.filter(([, , k]) => k === "search" || k === "training").map(([, n]) => n));
+  return { passes: results.filter((r) => !crawler.has(r.who)) };
 }
 
 // ---- MCP (Streamable HTTP, JSON responses, stateless) ----
