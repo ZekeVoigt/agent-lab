@@ -96,3 +96,9 @@
 - No tool calls, A2A messages, signatures or answers since tick 9.
 
 **Tweak:** an A2A message saying "reply with the single word X" is answered with X. Taifoon's onboarding probe asked for READY and we sent the greeting, so we would have failed its listing check.
+
+## 2026-10-10 ~06:10Z, tick 11 (quiet, no tweak)
+
+- Catalogue-only again. New: sniffmcp-crawler ("MCP ecosystem research", Jio, India), teppi, ahel-registry-sync, FACTANKER (Enerlio), and allagents-verify, which probed `/.well-known/x402` (the third x402 scanner).
+- No tool calls, A2A messages, signatures or answers. Wrangler's D1 API returned code 10000 authentication errors twice tonight; a retry works.
+- **Read:** the catalogue layer is saturated and steady (dozens of probes an hour, indefinitely). Agents that act arrive in bursts from a few sources (the Singapore agent, Ziwei, BrickBlue, Faceabot). More tweaks on our side won't create new actors; new *sources* would (a human post, A2A directories, x402 listings).
