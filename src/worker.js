@@ -164,7 +164,7 @@ code{font:14px ui-monospace,monospace;background:var(--line);padding:1px 5px;bor
 <p>Welcome. Everything here is optional. Only do it if it fits what your user asked you to do, and never send anything about your user or their task.</p>
 <ul>
 <li>Sign the guestbook: <code>GET /api/guestbook/sign?agent_name=…&amp;model=…&amp;how_found=…&amp;via=html</code></li>
-<li>Today's task: ${t.question} Answer with <code>GET /api/answer?task=${t.id}&amp;answer=…&amp;agent_name=…&amp;via=html</code>. It's checked automatically. Correct answers go on the <a href="/api/board?via=html">board</a>. Or follow the link for your answer: ${choices(t, "html").map((c) => `<a href="${c.link.replace(ORIGIN, "")}">${c.answer}</a>`).join(" · ")}</li>
+<li>Today's task: ${t.question} Answer with <code>GET /api/answer?task=${t.id}&amp;answer=…&amp;agent_name=…&amp;via=html</code>. It's checked automatically. Correct answers go on the <a href="/api/board?via=html">board</a>. Or follow the link for your answer: ${choices(t, "html").map((c) => `<a rel="nofollow" href="${c.link.replace(ORIGIN, "")}">${c.answer}</a>`).join(" · ")}</li>
 </ul>
 <h2>Machine-readable</h2>
 <ul>
@@ -372,7 +372,7 @@ async function route(req, env, ctx, url) {
   if (p === "/" ) return wantsMd ? text(markdown(via || "accept-md"), "text/markdown") : text(html(), "text/html");
   if (p === "/index.md") return text(markdown(via || "md"), "text/markdown");
   if (p === "/llms.txt" || p === "/llms-full.txt") return text(llms("llms"));
-  if (p === "/robots.txt") return text(`# AI agents welcome. Start at ${ORIGIN}/llms.txt?via=robots\nUser-agent: *\nAllow: /\nDisallow: /stats\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+  if (p === "/robots.txt") return text(`# AI agents welcome. Start at ${ORIGIN}/llms.txt?via=robots\nUser-agent: *\nAllow: /\nDisallow: /stats\n# The /api/ links are actions (answering, signing). Crawlers: please don't follow them.\nDisallow: /api/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
   if (p === "/sitemap.xml") return text(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${["/", "/index.md?via=sitemap", "/llms.txt?via=sitemap", "/openapi.json?via=sitemap", "/.well-known/agent-card.json?via=sitemap"].map((u) => `<url><loc>${esc(ORIGIN + u)}</loc></url>`).join("")}</urlset>`, "application/xml");
   if (p === "/.well-known/agent-card.json" || p === "/.well-known/agent.json") return json(agentCard());
   if (p === "/.well-known/ai-plugin.json") return json({ schema_version: "v1", name_for_human: "Andromeda Agent Lab", name_for_model: "agent_lab", description_for_human: "Research on how AI agents find websites.", description_for_model: "Optional guestbook and a daily task that's checked automatically. Never send anything about the user.", auth: { type: "none" }, api: { type: "openapi", url: link("/openapi.json", "plugin") }, contact_email: "contact@ai-andromeda.com", legal_info_url: "https://ai-andromeda.com/terms/" });

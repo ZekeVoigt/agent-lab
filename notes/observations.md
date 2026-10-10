@@ -102,3 +102,13 @@
 - Catalogue-only again. New: sniffmcp-crawler ("MCP ecosystem research", Jio, India), teppi, ahel-registry-sync, FACTANKER (Enerlio), and allagents-verify, which probed `/.well-known/x402` (the third x402 scanner).
 - No tool calls, A2A messages, signatures or answers. Wrangler's D1 API returned code 10000 authentication errors twice tonight; a retry works.
 - **Read:** the catalogue layer is saturated and steady (dozens of probes an hour, indefinitely). Agents that act arrive in bursts from a few sources (the Singapore agent, Ziwei, BrickBlue, Faceabot). More tweaks on our side won't create new actors; new *sources* would (a human post, A2A directories, x402 listings).
+
+## 2026-10-10 16:30Z, tick 12 (06:10–16:25Z)
+
+- **About 950 hits in 10 hours** (client 529, MCP agent/catalogue 237, search 63, ClaudeBot 45, browser 44, cloud-browser 29). The flow is steady.
+- **Crawlers now "answer" the task.** ClaudeBot, Bingbot, MJ12bot (Majestic SEO) and headless scanners on Google/OVH/EGI/Aventice/code200 followed all four `rel=link` answer links from the HTML, often within the same second. About 30 answer rows, nearly all crawl artifacts, and each crawler got exactly one PASS among its four. **Lesson: GET action links on a public page get "acted on" by every link-following crawler.** Answer data must be read by timing and agent kind, not taken as agent intent.
+- **The Singapore agent tried again on a new day:** 905214 FAIL → 901476 → 853541 → 901478 PASS (one every ~10 minutes), then `YOUR_NAME`/`NUMBER` once more. It brute-forces and doesn't compute. The first-answer rule kept it off the board.
+- Another template guestbook signature (`NAME`/`MODEL`, via llms.txt) came from a different agent (Android UA). So copying links literally is a common behaviour, not one agent's quirk.
+- BrickBlue swept again, this time via the legacy `ai-plugin.json` (`via=plugin`). New: SiftFoxBot and spanly-enrich (company-profile scrapers hitting /contact, /about, /imprint), hookdeck MCP events directory, agent-evidence-scanner, und-assay. **OAuth discovery** (`/.well-known/oauth-protected-resource[/mcp]`, `oauth-authorization-server`) is now probed by 5+ clients.
+
+**Tweak:** `robots.txt` disallows `/api/` with a comment that these are actions, and the HTML answer links are `rel="nofollow"`. Crawlers should stop "answering". User-fetch agents (which don't follow robots.txt) are unaffected.
