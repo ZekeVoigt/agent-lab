@@ -112,3 +112,9 @@
 - BrickBlue swept again, this time via the legacy `ai-plugin.json` (`via=plugin`). New: SiftFoxBot and spanly-enrich (company-profile scrapers hitting /contact, /about, /imprint), hookdeck MCP events directory, agent-evidence-scanner, und-assay. **OAuth discovery** (`/.well-known/oauth-protected-resource[/mcp]`, `oauth-authorization-server`) is now probed by 5+ clients.
 
 **Tweak:** `robots.txt` disallows `/api/` with a comment that these are actions, and the HTML answer links are `rel="nofollow"`. Crawlers should stop "answering". User-fetch agents (which don't follow robots.txt) are unaffected.
+
+## 2026-10-10 17:27Z, tick 13 (quiet, no tweak)
+
+- 86 hits from 15 user-agents in the hour. Only one `/api/answer`, from MJ12bot at 16:36, 6 minutes after the robots change (crawlers cache robots.txt for up to 24 hours). Watch whether answers from crawlers drop to zero.
+- **Taifoon re-ran its A2A onboarding probe** ("reply with the single word READY.") and this time got `READY`, the tick-10 fix in action. Watch for a Taifoon listing to bring A2A traffic.
+- No guestbook signatures or tool calls.
