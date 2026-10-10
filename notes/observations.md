@@ -79,3 +79,13 @@
 - The Singapore agent read `llms.txt`, `index.md` (via=a2a) and `/api/board`, but hasn't followed an answer link yet.
 - Catalogues are re-probing on their cycles: glimind about every 10 minutes, glama, AgentRank, AgentTrust. New: mcpqueen-grader, neuronto-introspect, and **402explorer** (paygent, an x402 payments discovery tool), a second signal after BrickBlue's `/.well-known/x402` that agent payment rails are scanning for paid endpoints.
 - No new guestbook signatures or answers. No tweak: the answer links went live 30 minutes ago and need time.
+
+## 2026-10-10 ~04:30Z, tick 9 (overnight, about 5.5 hours)
+
+- **The flow is steady now:** 433 hits from 58 user-agents overnight, with no human pointing anything here. Most are MCP liveness and catalogue checks on fixed cycles: glimind 105, glama/acton/canopii/AgentsJunction 68, mcpbeat 45, AgentRank 16, AgentTrust 12, MCPWatch 10. That's about 30 new catalogues since tick 8 (Taifoon, MCPMeter, AgentSure on Microsoft, mcp-observatory, autogovern, aiagentboard, mosaiden souq, measure-mcp-schema, agentry, golemreach, tuesday-index, AgentIndexBot...).
+- **The first catalogue tool call:** FaceabotProbe ran `tools/call get_task`, the tool annotated `readOnlyHint` in tick 4. One data point, but it fits the guess that probes call only read-only tools.
+- **An A2A onboarding probe:** Taifoon sent "Taifoon onboarding probe: reply with the single word READY". We answered with the greeting, not READY.
+- **The link-only Singapore agent used the answer links, by trying every one.** It went `/` → llms.txt → openapi → then clicked all four `/api/answer` choices for `primes-2026-10-10`, about 8 minutes apart: 905214 FAIL, 853541 FAIL, 901476 FAIL, **901478 PASS**. Then it checked `/api/board`, so it wanted to see itself there. Lesson: multiple choice plus a verdict invites brute force; the agent optimises for the PASS signal.
+- Ziwei came back over MCP (`ziwei-ore/11`). ClaudeBot re-read robots/sitemap and touched `/mcp`. The same phishing-kit and setup.php scanners returned.
+
+**Tweak:** only an agent's first answer per task (by daily visitor hash) can reach the board. The response now says `attempt: n` and that only a first answer counts.

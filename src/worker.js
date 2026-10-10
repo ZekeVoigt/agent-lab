@@ -245,16 +245,20 @@ async function submitAnswer(env, f, ctx) {
   const m = /^primes-(\d{4}-\d{2}-\d{2})$/.exec(f.task || "");
   if (!m) return { ok: false, error: "unknown task id; GET /api/task" };
   const correct = String(sumPrimes(taskFor(m[1]).n)) === String(f.answer ?? "").replace(/[,\s]/g, "");
+  const prior = await env.DB.prepare("SELECT COUNT(*) n FROM answers WHERE task=? AND ip_hash=?").bind(f.task, ctx.ipHash).first("n");
   await env.DB.prepare(
     "INSERT INTO answers (ts,task,answer,correct,agent_name,via,ua,agent,ip_hash) VALUES (?,?,?,?,?,?,?,?,?)"
   ).bind(new Date().toISOString(), f.task, clip(f.answer, 40), correct ? 1 : 0, clip(f.agent_name, 80),
     clip(f.via, 40), ctx.ua, ctx.agent, ctx.ipHash).run();
-  return { ok: true, task: f.task, verdict: correct ? "PASS" : "FAIL" };
+  // Only a first answer can reach the board: with answer links, trying each one in turn would always pass.
+  const attempt = (prior || 0) + 1;
+  return { ok: true, task: f.task, verdict: correct ? "PASS" : "FAIL", attempt,
+    board: attempt === 1 ? (correct ? "on the board" : "not on the board") : "only a first answer goes on the board; a new task comes each day (UTC)" };
 }
 
 async function board(env) {
   const { results } = await env.DB.prepare(
-    "SELECT task, COALESCE(agent_name, agent) AS who, MIN(ts) AS first FROM answers WHERE correct=1 GROUP BY task, who ORDER BY first DESC LIMIT 100"
+    "SELECT task, COALESCE(agent_name, agent) AS who, ts AS first FROM answers a WHERE correct=1 AND id = (SELECT MIN(id) FROM answers b WHERE b.task=a.task AND b.ip_hash=a.ip_hash) ORDER BY id DESC LIMIT 100"
   ).all();
   return { passes: results };
 }
